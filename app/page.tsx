@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ethers } from 'ethers';
 
-// FIX: TypeScript declaration for window.ethereum (Resolves image_03b356.png)
+// FIX: TypeScript declaration for window.ethereum
 declare global {
   interface Window {
     ethereum?: any;
@@ -11,9 +11,8 @@ declare global {
 }
 
 const CONTRACT_ADDRESS = "0xc2A17C61E6eC87d633055ffFD1978DfDc743963d"; 
-// UPDATED RPC: Based on image_0e8d1e.png
 const RPC_URL = "https://mainnet.megaeth.com/rpc"; 
-const MEGAETH_CHAIN_ID = "0x53a"; // 1338 in Hex
+const MEGAETH_CHAIN_ID = "0x10e6"; // 4326 in Hex
 
 const ABI = [
   "function totalSupply() view returns (uint256)",
@@ -22,13 +21,12 @@ const ABI = [
 
 const MAX_SUPPLY = 2222;
 
-export default function TinyBunnyMint() {
+export default function TinyBunnyFinal() {
   const [supply, setSupply] = useState<number>(0);
   const [account, setAccount] = useState<string | null>(null);
   const [isMinting, setIsMinting] = useState(false);
   const [mintQty, setMintQty] = useState(1);
 
-  // FETCH SUPPLY - Uses Try/Catch to prevent Bad Data overlays (image_0e1484.png)
   const fetchSupply = useCallback(async () => {
     try {
       const provider = new ethers.JsonRpcProvider(RPC_URL, undefined, { staticNetwork: true });
@@ -76,14 +74,13 @@ export default function TinyBunnyMint() {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         setAccount(accounts[0]);
         await switchToMegaETH();
-      } catch (err) { console.log("Rejected"); }
+      } catch (err) { console.log("Connection rejected"); }
     } else { alert("Please install Metamask!"); }
   };
 
   const handleMint = async () => {
     if (!account) return connectWallet();
     
-    // Check network before minting
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
     if (chainId !== MEGAETH_CHAIN_ID) {
       const success = await switchToMegaETH();
@@ -99,7 +96,6 @@ export default function TinyBunnyMint() {
       const pricePerNft = ethers.parseUnits("0.0002", "ether");
       const totalValue = pricePerNft * BigInt(mintQty);
 
-      // Manual gas limit to prevent "Mint Failed" alerts (image_0e9b6a.png)
       const tx = await contract.mint(mintQty, { 
         value: totalValue,
         gasLimit: 300000 
@@ -110,7 +106,7 @@ export default function TinyBunnyMint() {
       alert("MINT SUCCESSFUL!");
     } catch (err: any) {
       console.error(err);
-      alert(err.reason || "Mint failed. Check balance or try again.");
+      alert(err.reason || "Mint failed. Check balance or network!");
     } finally {
       setIsMinting(false);
     }
@@ -132,28 +128,38 @@ export default function TinyBunnyMint() {
             fontFamily: '"Press Start 2P", cursive' 
           }}>
       
-      {/* Grid Background */}
       <div className="absolute inset-0 z-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
 
-      {/* Navbar */}
-      <nav className="fixed w-full top-0 bg-white/40 backdrop-blur-md border-b-4 border-black z-50 font-sans">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center font-bold">
-            <div className="flex items-center gap-3 tracking-tighter uppercase italic">
+      {/* NAVBAR */}
+      <nav className="fixed w-full top-0 bg-white/40 backdrop-blur-md border-b-4 border-black z-50">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+            <div className="flex items-center gap-3">
                 <div className="bg-pink-500 border-2 border-black p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     <img src="/bunny.png" alt="logo" className="w-5 h-5 object-contain" />
                 </div>
-                Tiny Bunny
+                <span className="hidden md:block text-[10px] font-black uppercase italic tracking-tighter">Tiny Bunny</span>
             </div>
-            <button onClick={connectWallet} className="text-[9px] bg-white border-2 border-black px-4 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none">
-              {account ? `${account.substring(0,6)}...${account.substring(38)}` : "CONNECT WALLET"}
-            </button>
+
+            <div className="flex items-center gap-6 md:gap-12">
+                <div className="relative flex items-center">
+                    <span className="text-[8px] font-bold text-zinc-400 cursor-not-allowed uppercase">Bunny Agent</span>
+                    <span className="absolute -top-3 -right-6 bg-pink-500 text-white text-[6px] px-1 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">SOON</span>
+                </div>
+                
+                <button 
+                  onClick={connectWallet} 
+                  className="text-[8px] bg-white border-2 border-black px-4 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none hover:bg-pink-50 transition-colors"
+                >
+                  {account ? `${account.substring(0,6)}...` : "CONNECT WALLET"}
+                </button>
+            </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* HERO SECTION */}
       <div className="pt-32 pb-12 px-6 max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
         <div className="space-y-8">
-            <div className="inline-block border-2 border-black px-3 py-1 text-[8px] font-bold bg-yellow-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase">MegaETH Live</div>
+            <div className="inline-block border-2 border-black px-3 py-1 text-[8px] font-bold bg-yellow-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase tracking-widest">Network ID: 4326</div>
             <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-tight">
                 FAST HOP.<br/> <span className="text-pink-600">NO STOP.</span>
             </h1>
@@ -172,18 +178,19 @@ export default function TinyBunnyMint() {
                   {isMinting ? "MINTING..." : `MINT ${mintQty} BUNNY`}
                 </button>
 
-                <div className="flex justify-between text-[8px] font-bold">
+                <div className="flex justify-between text-[8px] font-bold uppercase tracking-tighter">
                     <span>MINTED: {supply} / {MAX_SUPPLY}</span>
+                    <span className="text-green-600 animate-pulse">● LIVE</span>
                 </div>
             </div>
         </div>
 
-        <div className="relative w-full max-w-sm mx-auto aspect-square border-4 border-black bg-white p-8 shadow-2xl">
+        <div className="relative w-full max-w-sm mx-auto aspect-square border-4 border-black bg-white p-8 shadow-2xl overflow-hidden">
             <img src="/bunny.png" alt="Bunny Preview" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
         </div>
       </div>
 
-      {/* 2-Row Seamless Gallery */}
+      {/* GALLERY ROWS */}
       <div className="relative z-10 py-10 border-y-4 border-black bg-white/30 overflow-hidden flex flex-col gap-8">
         <div className="flex whitespace-nowrap">
           <div className="flex animate-scroll-left">
@@ -205,17 +212,16 @@ export default function TinyBunnyMint() {
         </div>
       </div>
 
-      {/* Footer / Copyright */}
       <div className="relative z-10 py-20 flex flex-col items-center text-center px-6">
           <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
               <div className="text-[10px] font-bold text-pink-600 tracking-widest uppercase italic mb-2">© 2026 TINY BUNNY</div>
-              <div className="text-[8px] font-bold text-zinc-400 uppercase">ALL RIGHTS RESERVED</div>
+              <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-[0.2em]">ALL RIGHTS RESERVED</div>
           </div>
       </div>
 
       <footer className="fixed bottom-0 w-full bg-black border-t-4 border-black z-50 h-12 flex items-center overflow-hidden">
           <div className="text-pink-500 text-[8px] font-bold tracking-[0.3em] whitespace-nowrap animate-marquee">
-            CATCH THE BUNNY /// 2222 TOTAL SUPPLY /// NO GAS DELAY /// MEGAETH SPEED /// CATCH THE BUNNY /// 
+            CATCH THE BUNNY /// 2222 TOTAL SUPPLY /// NO GAS DELAY /// MEGAETH SPEED /// 
           </div>
       </footer>
 
