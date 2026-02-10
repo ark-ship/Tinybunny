@@ -3,17 +3,17 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ethers } from 'ethers';
 
-// FIX TypeScript: Biar gak error merah di terminal (image_03b356.png)
+// FIX: TypeScript declaration for window.ethereum (Resolves image_03b356.png)
 declare global {
   interface Window {
     ethereum?: any;
   }
 }
 
-// UPDATE RPC: Sesuai gambar image_0e8d1e.png
 const CONTRACT_ADDRESS = "0xc2A17C61E6eC87d633055ffFD1978DfDc743963d"; 
+// UPDATED RPC: Based on image_0e8d1e.png
 const RPC_URL = "https://mainnet.megaeth.com/rpc"; 
-const MEGAETH_CHAIN_ID = "0x53a"; // 1338
+const MEGAETH_CHAIN_ID = "0x53a"; // 1338 in Hex
 
 const ABI = [
   "function totalSupply() view returns (uint256)",
@@ -22,13 +22,13 @@ const ABI = [
 
 const MAX_SUPPLY = 2222;
 
-export default function TinyBunnyFinal() {
+export default function TinyBunnyMint() {
   const [supply, setSupply] = useState<number>(0);
   const [account, setAccount] = useState<string | null>(null);
   const [isMinting, setIsMinting] = useState(false);
   const [mintQty, setMintQty] = useState(1);
 
-  // FETCH SUPPLY - Pakai try-catch agar tidak muncul overlay error (image_0e1484.png)
+  // FETCH SUPPLY - Uses Try/Catch to prevent Bad Data overlays (image_0e1484.png)
   const fetchSupply = useCallback(async () => {
     try {
       const provider = new ethers.JsonRpcProvider(RPC_URL, undefined, { staticNetwork: true });
@@ -36,7 +36,7 @@ export default function TinyBunnyFinal() {
       const count = await contract.totalSupply();
       setSupply(Number(count));
     } catch (e) { 
-      console.log("RPC/Contract Syncing..."); 
+      console.log("Syncing chain data..."); 
     }
   }, []);
 
@@ -62,7 +62,7 @@ export default function TinyBunnyFinal() {
               }],
             });
             return true;
-          } catch (a) { return false; }
+          } catch (addError) { return false; }
         }
         return false;
       }
@@ -77,12 +77,13 @@ export default function TinyBunnyFinal() {
         setAccount(accounts[0]);
         await switchToMegaETH();
       } catch (err) { console.log("Rejected"); }
-    } else { alert("Install Metamask!"); }
+    } else { alert("Please install Metamask!"); }
   };
 
   const handleMint = async () => {
     if (!account) return connectWallet();
     
+    // Check network before minting
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
     if (chainId !== MEGAETH_CHAIN_ID) {
       const success = await switchToMegaETH();
@@ -95,9 +96,10 @@ export default function TinyBunnyFinal() {
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
       
-      const totalValue = ethers.parseUnits("0.0002", "ether") * BigInt(mintQty);
+      const pricePerNft = ethers.parseUnits("0.0002", "ether");
+      const totalValue = pricePerNft * BigInt(mintQty);
 
-      // Gas limit manual untuk cegah image_039c94.png
+      // Manual gas limit to prevent "Mint Failed" alerts (image_0e9b6a.png)
       const tx = await contract.mint(mintQty, { 
         value: totalValue,
         gasLimit: 300000 
@@ -105,9 +107,10 @@ export default function TinyBunnyFinal() {
 
       await tx.wait();
       fetchSupply();
-      alert("MINT SUCCESS!");
+      alert("MINT SUCCESSFUL!");
     } catch (err: any) {
-      alert(err.reason || "Mint failed. Cek saldo/network!");
+      console.error(err);
+      alert(err.reason || "Mint failed. Check balance or try again.");
     } finally {
       setIsMinting(false);
     }
@@ -129,56 +132,63 @@ export default function TinyBunnyFinal() {
             fontFamily: '"Press Start 2P", cursive' 
           }}>
       
+      {/* Grid Background */}
       <div className="absolute inset-0 z-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
 
-      <nav className="fixed w-full top-0 bg-white/40 backdrop-blur-md border-b-4 border-black z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
-            <div className="flex items-center gap-3 font-black text-sm">
-                <div className="bg-pink-500 border-2 border-black p-1 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+      {/* Navbar */}
+      <nav className="fixed w-full top-0 bg-white/40 backdrop-blur-md border-b-4 border-black z-50 font-sans">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center font-bold">
+            <div className="flex items-center gap-3 tracking-tighter uppercase italic">
+                <div className="bg-pink-500 border-2 border-black p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     <img src="/bunny.png" alt="logo" className="w-5 h-5 object-contain" />
                 </div>
-                TINY BUNNY
+                Tiny Bunny
             </div>
-            <button onClick={connectWallet} className="text-[8px] font-bold bg-white border-2 border-black px-4 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-              {account ? `${account.substring(0,6)}...` : "CONNECT"}
+            <button onClick={connectWallet} className="text-[9px] bg-white border-2 border-black px-4 py-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-none">
+              {account ? `${account.substring(0,6)}...${account.substring(38)}` : "CONNECT WALLET"}
             </button>
         </div>
       </nav>
 
+      {/* Hero Section */}
       <div className="pt-32 pb-12 px-6 max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
         <div className="space-y-8">
-            <div className="inline-block border-2 border-black px-3 py-1 text-[8px] font-bold bg-yellow-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">MegaETH Live</div>
+            <div className="inline-block border-2 border-black px-3 py-1 text-[8px] font-bold bg-yellow-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase">MegaETH Live</div>
             <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-tight">
                 FAST HOP.<br/> <span className="text-pink-600">NO STOP.</span>
             </h1>
+            
             <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm space-y-6">
                 <div className="flex items-center justify-between border-b-2 border-black pb-4">
                     <div className="flex border-2 border-black bg-white">
-                        <button onClick={() => setMintQty(Math.max(1, mintQty - 1))} className="px-3 py-1 border-r-2 border-black font-black">-</button>
+                        <button onClick={() => setMintQty(Math.max(1, mintQty - 1))} className="px-3 py-1 border-r-2 border-black font-black hover:bg-zinc-100">-</button>
                         <div className="px-4 py-1 font-black">{mintQty}</div>
-                        <button onClick={() => setMintQty(Math.min(5, mintQty + 1))} className="px-3 py-1 border-l-2 border-black font-black">+</button>
+                        <button onClick={() => setMintQty(Math.min(5, mintQty + 1))} className="px-3 py-1 border-l-2 border-black font-black hover:bg-zinc-100">+</button>
                     </div>
                     <div className="text-[10px] font-black italic text-pink-600">0.0002 ETH</div>
                 </div>
+                
                 <button onClick={handleMint} disabled={isMinting} className="w-full py-4 bg-pink-500 text-white border-4 border-black text-[10px] font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
                   {isMinting ? "MINTING..." : `MINT ${mintQty} BUNNY`}
                 </button>
+
                 <div className="flex justify-between text-[8px] font-bold">
                     <span>MINTED: {supply} / {MAX_SUPPLY}</span>
                 </div>
             </div>
         </div>
-        <div className="relative w-full max-w-sm mx-auto aspect-square border-4 border-black bg-white p-8 shadow-2xl overflow-hidden">
-            <img src="/bunny.png" alt="Preview" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
+
+        <div className="relative w-full max-w-sm mx-auto aspect-square border-4 border-black bg-white p-8 shadow-2xl">
+            <img src="/bunny.png" alt="Bunny Preview" className="w-full h-full object-contain" style={{ imageRendering: 'pixelated' }} />
         </div>
       </div>
 
-      {/* 2 BARIS GALLERY SEAMLESS */}
+      {/* 2-Row Seamless Gallery */}
       <div className="relative z-10 py-10 border-y-4 border-black bg-white/30 overflow-hidden flex flex-col gap-8">
         <div className="flex whitespace-nowrap">
           <div className="flex animate-scroll-left">
             {[...row1, ...row1, ...row1].map((n, i) => (
-              <div key={i} className="flex-shrink-0 mx-4 w-28 h-28 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div key={i} className="flex-shrink-0 mx-4 w-24 h-24 md:w-32 md:h-32 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <img src={`/gallery/${n}.png`} alt="B" className="w-full h-full object-cover" onError={(e) => e.currentTarget.src="/bunny.png"} />
               </div>
             ))}
@@ -187,7 +197,7 @@ export default function TinyBunnyFinal() {
         <div className="flex whitespace-nowrap">
           <div className="flex animate-scroll-right">
             {[...row2, ...row2, ...row2].map((n, i) => (
-              <div key={i} className="flex-shrink-0 mx-4 w-28 h-28 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div key={i} className="flex-shrink-0 mx-4 w-24 h-24 md:w-32 md:h-32 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <img src={`/gallery/${n}.png`} alt="B" className="w-full h-full object-cover" onError={(e) => e.currentTarget.src="/bunny.png"} />
               </div>
             ))}
@@ -195,16 +205,17 @@ export default function TinyBunnyFinal() {
         </div>
       </div>
 
-      <div className="relative z-10 py-20 flex flex-col items-center px-6">
-          <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
-              <div className="text-[8px] font-bold text-pink-600 tracking-widest uppercase italic mb-2">© 2026 TINY BUNNY</div>
-              <div className="text-[7px] font-bold text-zinc-400 uppercase">ALL RIGHTS RESERVED</div>
+      {/* Footer / Copyright */}
+      <div className="relative z-10 py-20 flex flex-col items-center text-center px-6">
+          <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <div className="text-[10px] font-bold text-pink-600 tracking-widest uppercase italic mb-2">© 2026 TINY BUNNY</div>
+              <div className="text-[8px] font-bold text-zinc-400 uppercase">ALL RIGHTS RESERVED</div>
           </div>
       </div>
 
       <footer className="fixed bottom-0 w-full bg-black border-t-4 border-black z-50 h-12 flex items-center overflow-hidden">
           <div className="text-pink-500 text-[8px] font-bold tracking-[0.3em] whitespace-nowrap animate-marquee">
-            CATCH THE BUNNY /// 2222 TOTAL SUPPLY /// NO GAS DELAY /// MEGAETH SPEED /// 
+            CATCH THE BUNNY /// 2222 TOTAL SUPPLY /// NO GAS DELAY /// MEGAETH SPEED /// CATCH THE BUNNY /// 
           </div>
       </footer>
 
