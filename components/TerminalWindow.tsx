@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 interface TerminalProps { onSuccess?: () => void; }
 
 export default function TerminalWindow({ onSuccess }: TerminalProps) {
-  const [logs, setLogs] = useState<string[]>(["TINY BUNNY OS v1.0.1", "READY TO HOP. TYPE 'MINT' TO START."]);
+  const [logs, setLogs] = useState<string[]>(["TINY BUNNY", "READY TO HOP. TYPE 'MINT' TO START."]);
   const [input, setInput] = useState("");
   const [status, setStatus] = useState("idle"); 
   const [userWallet, setUserWallet] = useState("");
