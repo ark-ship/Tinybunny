@@ -89,12 +89,15 @@ export default function TinyBunnyFinal() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-      const pricePerNft = ethers.parseUnits("0.0002", "ether");
+      
+      // UPDATE: Harga diubah ke 0.00003 ETH (Sesuai request)
+      const pricePerNft = ethers.parseUnits("0.00003", "ether");
       const totalValue = pricePerNft * BigInt(mintQty);
+      
       const tx = await contract.mint(mintQty, { value: totalValue, gasLimit: 300000 });
       await tx.wait();
       fetchSupply();
-      alert("MINT SUCCESSFUL!");
+      alert("FREE MINT SUCCESSFUL!");
     } catch (err: any) {
       alert(err.reason || "Mint failed. Check balance!");
     } finally { setIsMinting(false); }
@@ -127,14 +130,17 @@ export default function TinyBunnyFinal() {
                 <span className="hidden lg:block text-[10px] font-black uppercase italic">Tiny Bunny</span>
             </div>
             <div className="flex items-center gap-4 md:gap-8">
+                {/* Agent - Pink */}
                 <div className="relative flex items-center">
                     <span className="text-[7px] md:text-[8px] font-bold text-zinc-400 uppercase">Agent</span>
                     <span className="absolute -top-3 -right-4 bg-pink-500 text-white text-[5px] px-1 border border-black shadow-[1px_1px_0px_0px_#000]">SOON</span>
                 </div>
+                {/* Raffle - Yellow */}
                 <div className="relative flex items-center">
                     <span className="text-[7px] md:text-[8px] font-bold text-zinc-400 uppercase">Raffle</span>
                     <span className="absolute -top-3 -right-4 bg-yellow-400 text-black text-[5px] px-1 border border-black shadow-[1px_1px_0px_0px_#000]">SOON</span>
                 </div>
+                {/* Stake - Green */}
                 <div className="relative flex items-center">
                     <span className="text-[7px] md:text-[8px] font-bold text-zinc-400 uppercase">Stake</span>
                     <span className="absolute -top-3 -right-4 bg-green-500 text-white text-[5px] px-1 border border-black shadow-[1px_1px_0px_0px_#000]">SOON</span>
@@ -149,7 +155,7 @@ export default function TinyBunnyFinal() {
       {/* HERO SECTION */}
       <div className="pt-32 pb-12 px-6 max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
         <div className="space-y-8">
-            <div className="inline-block border-2 border-black px-3 py-1 text-[8px] font-bold bg-yellow-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase">tiny bunny</div>
+            <div className="inline-block border-2 border-black px-3 py-1 text-[8px] font-bold bg-yellow-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase tracking-widest italic">Free Mint Live</div>
             <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-tight">FAST HOP.<br/> <span className="text-pink-600">NO STOP.</span></h1>
             <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm space-y-6">
                 <div className="flex items-center justify-between border-b-2 border-black pb-4">
@@ -158,10 +164,11 @@ export default function TinyBunnyFinal() {
                         <div className="px-4 py-1 font-black">{mintQty}</div>
                         <button onClick={() => setMintQty(Math.min(5, mintQty + 1))} className="px-3 py-1 border-l-2 border-black font-black">+</button>
                     </div>
-                    <div className="text-[10px] font-black text-pink-600">0.0002 ETH</div>
+                    {/* UPDATE: UI Label Harga Jadi FREE */}
+                    <div className="text-[10px] font-black text-pink-600 uppercase italic">Price: FREE</div>
                 </div>
                 <button onClick={handleMint} disabled={isMinting} className="w-full py-4 bg-pink-500 text-white border-4 border-black text-[10px] font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase">
-                  {isMinting ? "Minting..." : `Mint ${mintQty} Bunny`}
+                  {isMinting ? "Minting..." : `Mint ${mintQty} Free Bunny`}
                 </button>
                 <div className="flex justify-between text-[8px] font-bold"><span>Supply: {supply} / {MAX_SUPPLY}</span> <span className="text-green-600 animate-pulse">● Live</span></div>
             </div>
@@ -190,7 +197,7 @@ export default function TinyBunnyFinal() {
           <div className="space-y-6">
               {[
                 { q: "What is Tiny Bunny?", a: "Tiny Bunny is a collection of 2,222 unique pixel art NFTs hopping on the MegaETH network." },
-                { q: "How much is the mint price?", a: "Each Tiny Bunny costs 0.0002 ETH per mint." },
+                { q: "How much is the mint price?", a: "The mint is FREE (subject to small network service fees)." },
                 { q: "Which network do I use?", a: "We are live on MegaETH (Chain ID: 4326). Make sure to bridge your ETH before minting." },
                 { q: "What's the utility?", a: "Holding a Tiny Bunny gives you access to the upcoming Bunny Agent, Raffles, and Staking features." }
               ].map((faq, i) => (
@@ -201,7 +208,7 @@ export default function TinyBunnyFinal() {
               ))}
           </div>
 
-          {/* SOCIAL LINKS - ADDED HERE */}
+          {/* SOCIAL LINKS */}
           <div className="mt-16 flex flex-wrap justify-center gap-6">
               <a href="https://x.com/tinybunnyNFT" target="_blank" rel="noopener noreferrer" 
                  className="flex items-center gap-3 bg-white border-4 border-black px-6 py-3 shadow-[4px_4px_0px_0px_#000] hover:translate-y-1 hover:shadow-none transition-all">
