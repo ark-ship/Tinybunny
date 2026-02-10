@@ -177,7 +177,7 @@ export default function TinyBunnyFullMint() {
       {/* INFO & MINT CONTROL (ISI AREA KOSONG) */}
       <div className="relative z-10 py-20 flex flex-col items-center px-6">
           <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-xl w-full text-center">
-              <h2 className="text-sm font-black mb-8 uppercase italic">MINT CONTROL PANEL</h2>
+              <h2 className="text-sm font-black mb-8 uppercase italic">MINT HERE</h2>
               
               {/* QUANTITY SELECTOR */}
               <div className="flex items-center justify-between border-4 border-black p-4 mb-6 bg-zinc-50">
